@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import PersonForm from './PersonForm/PersonForm';
+import Persons from './Persons/Persons';
+import Filter from './Filter/Filter';
+import api from './api/api';
 
 const Part2 = () => {
-  const [ persons, setPersons] = useState([
-    { id: 1, name: 'Arto Hellas', number: '040-123456' },
-    { id: 2, name: 'Ada Lovelace', number: '39-44-5323523' },
-    { id: 3, name: 'Dan Abramov', number: '12-43-234345' },
-    { id: 4, name: 'Mary Poppendieck', number: '39-23-6423122' }
-  ]) 
+  const [ persons, setPersons] = useState([]); 
   const [ newName, setNewName ] = useState('');
   const [ newPhone, setNewPhone ] = useState('');
-  const [ searchText, setSearchText ] = useState('');
   const [ currentPersons, setCurrentPersons ] = useState([...persons]);
+
+  useEffect(() => {
+    api.persons().then((res) => setPersons([...res]));
+  }, []);
+
+  useEffect(() => {
+    setCurrentPersons([...persons]);
+  }, [persons]);
 
   const checkName = () => {
     return persons.some(pers => pers.name === newName);
@@ -18,12 +24,11 @@ const Part2 = () => {
 
   const onSubmitHandler = (event) => {
     event.preventDefault();
-
     if (checkName()) {
       alert(`${newName} alredy exists in phonebook!`);
     } else {
-      const maxId = Math.max(persons.map(pers => pers.id)) + 1;
-      setPersons([...persons, { id: maxId, name: newName, phone: newPhone }]);
+      const maxId = Math.max(...persons.map(pers => pers.id)) + 1;
+      setPersons([...persons, { id: maxId, name: newName, number: newPhone }]);
     }
 
     clearForm();
@@ -31,7 +36,6 @@ const Part2 = () => {
 
   const onNameChange = (event) => {
     setNewName(event.target.value);
-    console.log(event.target.value, newName);
   };
 
   const onPhoneChange = (event) => {
@@ -39,7 +43,7 @@ const Part2 = () => {
   };
 
   const onSearchChange = (event) => {
-    setSearchText(event.target.value);
+    const searchText = event.target.value;
 
     if (!searchText) {
       setCurrentPersons([...persons]);
@@ -47,7 +51,7 @@ const Part2 = () => {
     }
 
     const filtredPersons = persons
-      .filter(pers => pers.name.toLowerCase() === searchText.toLowerCase());
+      .filter(pers => pers.name.toLowerCase().indexOf(searchText.toLowerCase()) >= 0);
     setCurrentPersons([...filtredPersons]);
   };
 
@@ -59,34 +63,15 @@ const Part2 = () => {
   return (
     <>
       <h2>Phonebook</h2>
-      <div>
-        <div>{searchText}</div>
-        <span>Search:</span>
-        <input value={ searchText } onChange={ onSearchChange }/>
-      </div>
-      <h2>add new</h2>
-      <form onSubmit={ onSubmitHandler }>
-        <div>
-          <span>name:</span>
-          <input value={ newName } onChange={ onNameChange }/>
-        </div>
-        <div>
-          <span>phone:</span>
-          <input value={ newPhone } onChange={ onPhoneChange }/>
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
-      <h2>Numbers</h2>
-      <ul>
-        { currentPersons.map(pers => 
-          <li key={ pers.id }>
-            <p>{ pers.name }</p>
-            <p>{ pers.number }</p>
-          </li>
-        )}
-      </ul>
+      <Filter onSearchChange={onSearchChange} />
+      <PersonForm
+        newName={newName}
+        newPhone={newPhone}
+        onNameChange={onNameChange}
+        onPhoneChange={onPhoneChange}
+        onSubmitHandler={onSubmitHandler}
+      />
+      <Persons currentPersons={currentPersons} />
     </>
   )
 };
