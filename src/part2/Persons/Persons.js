@@ -1,6 +1,7 @@
 import React from 'react';
+import Button from '../Button/Button';
 
-const Persons = ({currentPersons}) => {
+const Persons = ({currentPersons, deletePerson}) => {
   return (
     <>
       <h2>Numbers</h2>
@@ -9,6 +10,7 @@ const Persons = ({currentPersons}) => {
           <li key={ pers.id }>
             <p>{ pers.name }</p>
             <p>{ pers.number }</p>
+            <Button text="delete" handler={() => deletePerson(pers.id)}/>
           </li>
         )}
       </ul>

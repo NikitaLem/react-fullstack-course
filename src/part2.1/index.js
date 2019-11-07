@@ -23,6 +23,10 @@ const Part21 = () => {
     setSearchText(event.target.value);
   };
 
+  const showDetails = (name) => {
+    setSearchText(name);
+  };
+
   return (
     <>
       <Filter
@@ -31,6 +35,7 @@ const Part21 = () => {
       />
       <CountriesPresenter 
         currentCountries={currentCountries}
+        onShowHandler={showDetails}
       />
     </>
   );

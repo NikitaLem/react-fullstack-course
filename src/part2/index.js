@@ -19,17 +19,27 @@ const Part2 = () => {
   }, [persons]);
 
   const checkName = () => {
-    return persons.some(pers => pers.name === newName);
+    const check = persons.some(pers => pers.name === newName);
+    if (!check) return false;
+    return window.confirm(`Do you want to change number for ${newName}?`);
   };
 
   const onSubmitHandler = (event) => {
     event.preventDefault();
+    
     if (checkName()) {
-      alert(`${newName} alredy exists in phonebook!`);
-    } else {
-      const maxId = Math.max(...persons.map(pers => pers.id)) + 1;
-      setPersons([...persons, { id: maxId, name: newName, number: newPhone }]);
+      const personObj = {
+        ...persons.filter(p => p.name === newName)[0],
+        number: newPhone,
+      };
+      api.putPerson(personObj)
+        .then(resp => setPersons(persons.map(p => p.id !== resp.id ? p : resp)));
+      return;
     }
+
+    const newPerson = { name: newName, number: newPhone };
+    api.createPerson(newPerson)
+      .then(resp => setPersons([...persons, resp]));
 
     clearForm();
   };
@@ -60,6 +70,14 @@ const Part2 = () => {
     setNewPhone('');
   }
 
+  const deletePerson = (id) => {
+    const answer = window.confirm(`Delete person with id ${id}?`)
+    if (answer) {
+      api.deletePerson(id)
+        .then(() => setPersons(persons.filter(p => p.id !== id)));
+    } 
+  };
+
   return (
     <>
       <h2>Phonebook</h2>
@@ -71,7 +89,10 @@ const Part2 = () => {
         onPhoneChange={onPhoneChange}
         onSubmitHandler={onSubmitHandler}
       />
-      <Persons currentPersons={currentPersons} />
+      <Persons
+        currentPersons={currentPersons} 
+        deletePerson={deletePerson}  
+      />
     </>
   )
 };
