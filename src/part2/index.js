@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PersonForm from './PersonForm/PersonForm';
 import Persons from './Persons/Persons';
 import Filter from './Filter/Filter';
+import Notification from './Notification/Notification';
 import api from './api/api';
 
 const Part2 = () => {
@@ -9,6 +10,9 @@ const Part2 = () => {
   const [ newName, setNewName ] = useState('');
   const [ newPhone, setNewPhone ] = useState('');
   const [ currentPersons, setCurrentPersons ] = useState([...persons]);
+  const [ isError, setIsError ] = useState(false);
+  const [ isNotifShown, setIsNotifShown ] = useState(false);
+  const [ message, setMessage ] = useState('');
 
   useEffect(() => {
     api.persons().then((res) => setPersons([...res]));
@@ -18,28 +22,48 @@ const Part2 = () => {
     setCurrentPersons([...persons]);
   }, [persons]);
 
-  const checkName = () => {
-    const check = persons.some(pers => pers.name === newName);
-    if (!check) return false;
-    return window.confirm(`Do you want to change number for ${newName}?`);
+  const showNotification = message => {
+    return new Promise(resolve => {
+      setMessage(message);
+      setIsNotifShown(true);
+      setTimeout(() => {
+        setIsNotifShown(false);
+        resolve();
+      }, 3000);
+    });
   };
+
+  const checkName = () => {
+    return persons.some(pers => pers.name === newName);
+  };
+
+  const isChangePhone = () => {
+    return window.confirm(`Do you want to change number for ${newName}?`);
+  } 
 
   const onSubmitHandler = (event) => {
     event.preventDefault();
-    
-    if (checkName()) {
-      const personObj = {
-        ...persons.filter(p => p.name === newName)[0],
-        number: newPhone,
-      };
-      api.putPerson(personObj)
-        .then(resp => setPersons(persons.map(p => p.id !== resp.id ? p : resp)));
-      return;
-    }
 
-    const newPerson = { name: newName, number: newPhone };
-    api.createPerson(newPerson)
-      .then(resp => setPersons([...persons, resp]));
+    if (checkName()) {
+      if (isChangePhone()) {
+        const personObj = {
+          ...persons.filter(p => p.name === newName)[0],
+          number: newPhone,
+        };
+        api.putPerson(personObj)
+          .then(resp => {
+            setPersons(persons.map(p => p.id !== resp.id ? p : resp));
+            showNotification(`Changed ${newName}`);  
+          });
+      }
+    } else {
+      const newPerson = { name: newName, number: newPhone };
+      api.createPerson(newPerson)
+        .then(resp => {
+          setPersons([...persons, resp]);
+          showNotification(`Added ${newName}`);
+        });
+    }
 
     clearForm();
   };
@@ -74,13 +98,27 @@ const Part2 = () => {
     const answer = window.confirm(`Delete person with id ${id}?`)
     if (answer) {
       api.deletePerson(id)
-        .then(() => setPersons(persons.filter(p => p.id !== id)));
+        .then(() => {
+          const name = persons.find(p => p.id === id).name;
+          setPersons(persons.filter(p => p.id !== id));
+          showNotification(`Deleted ${name}`);
+        })
+        .catch(async error => {
+          setIsError(true);
+          await showNotification(error.message);
+          setIsError(false);
+        });
     } 
   };
 
   return (
     <>
       <h2>Phonebook</h2>
+      <Notification
+        isShown={isNotifShown} 
+        isError={isError} 
+        message={message}
+      />
       <Filter onSearchChange={onSearchChange} />
       <PersonForm
         newName={newName}

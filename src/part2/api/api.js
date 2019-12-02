@@ -11,9 +11,10 @@ export default {
   createPerson: (person) => api.post('', person)
     .then(({data}) => data),
 
-  deletePerson: (id) => api.delete(`/${id}`)
-    .then(({data}) => data),
-
   putPerson: (person) => api.put(`/${person.id}`, person)
     .then(({data}) => data),
+    
+  deletePerson: (id) => api.delete(`/${id}`)
+    .then(({data}) => data)
+    .catch((error) => { throw error })
 };

@@ -9,14 +9,14 @@ const PersonForm = ({
 }) =>
   <>
     <h2>add new</h2>
-    <form onSubmit={ onSubmitHandler }>
+    <form onSubmit={onSubmitHandler}>
       <div>
         <span>name:</span>
-        <input value={ newName } onChange={ onNameChange }/>
+        <input value={newName} onChange={onNameChange} />
       </div>
       <div>
         <span>phone:</span>
-        <input value={ newPhone } onChange={ onPhoneChange }/>
+        <input value={newPhone} onChange={onPhoneChange} />
       </div>
       <div>
         <button type="submit">add</button>

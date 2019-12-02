@@ -1,0 +1,15 @@
+.notification {
+  border-radius: 5px;
+  background: rgb(214, 214, 214);
+  font-size: 20px;
+}
+
+.notification_success {
+  border: 2px solid green;
+  color: green;
+}
+
+.notification_error {
+  border: 2px solid red;
+  color: red;
+}
