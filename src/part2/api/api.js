@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3001/persons',
+  baseURL: 'https://infinite-ridge-86850.herokuapp.com/api/persons',
 });
 
 export default {
